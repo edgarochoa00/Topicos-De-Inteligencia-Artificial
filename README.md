@@ -3,9 +3,10 @@
 
 INSTITUTO TECNOLOGICO DE CULIACAN
 
+INTEGRANTES:
+
 Edgar Ochoa Aviles
 
-Numero de control: 21170408
 
 Carrera: Ingeniería En Sistemas Computacionales
 
