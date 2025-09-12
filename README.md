@@ -10,10 +10,11 @@ Edgar Ochoa Aviles
 
 Carrera: Ingeniería En Sistemas Computacionales
 
-Materia: Inteligencia Artificial
+Materia: Topicos de IA
 
 Profesor: ZURIEL DATHAN MORA FELIX
 
 Grupo: 12:00 a 13:00 p.m
 
 Tareas, Trabajos, Proyectos.
+
