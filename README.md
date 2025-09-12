@@ -4,6 +4,7 @@
 INSTITUTO TECNOLOGICO DE CULIACAN
 
 INTEGRANTES:
+
 Herrera Quiñones Abraham Gael
 Edgar Ochoa Aviles
 
