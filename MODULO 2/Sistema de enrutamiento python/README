@@ -6,7 +6,6 @@
 ├── mdvrp/
 │   ├── config.py                  # Parámetros de configuración
 │   ├── data_loader.py             # Carga de datos
-│   ├── mapa.py                    # crea un mapa HTML
 │   ├── geometry.py                # Cálculo de distancias
 │   ├── clustering.py              # Asignación de tiendas a CDs
 │   ├── optimizer.py               # Núcleo del algoritmo SA
