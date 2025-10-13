@@ -22,3 +22,7 @@ Crear entorno virtual
 python -m venv venv
 source venv/bin/activate  # En Mac/Linux
 venv\\Scripts\\activate   # En Windows
+
+🚀 Ejecución
+Ejecuta el script principal para optimizar las rutas:
+python main.py
