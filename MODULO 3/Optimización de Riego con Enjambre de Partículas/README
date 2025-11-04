@@ -1,0 +1,83 @@
+           Integrantes:
+		Herrera Quiñones Abraham Gael
+					Ochoa Aviles Edgar
+
+             Carrera:
+Ingeniería En Sistemas Computacionales
+
+             Materia: 
+           Tópicos De IA
+
+               Tarea:
+Optimización de Riego con Enjambre de Partículas (Modulo III)
+
+              Profesor:
+       Zuriel Dathan Mora Felix
+
+               Grupo:
+           12:00 - 13:00 PM
+
+           Fecha: 5/11/2025
+
+
+Este proyecto aplica el algoritmo de Enjambre de Partículas 
+(PSO) para optimizar la ubicación de sensores de humedad del
+suelo en campos agrícolas de Guasave, Sinaloa, con el objetivo
+de mejorar la eficiencia del riego y la gestión de los recursos hídricos.
+
+El sistema analiza variables como:
+
+Humedad del suelo (%)
+Salinidad (dS/m)
+Elevación (m)
+Temperatura (°C)
+Coordenadas geográficas (Latitud, Longitud)
+
+Objetivo
+
+Optimizar la colocación de sensores de humedad considerando
+factores topográficos y ambientales mediante el uso del 
+algoritmo Particle Swarm Optimization (PSO).
+
+Tecnologías utilizadas
+Lenguaje: Python 3.x
+Librerías principales:
+numpy
+pandas
+matplotlib
+random
+csv
+scipy (opcional, para análisis adicional)
+
+Estructura del proyecto
+proyecto_pso_riego/
+│
+├── main.py                # Script principal: ejecuta el flujo completo
+├── cargador_datos.py      # Módulo para cargar y validar datos CSV
+├── pso.py                 # Implementación del algoritmo PSO
+├── datos_cultivos.csv     # Datos de entrada (cultivos y variables)
+├── resultados/            # Resultados y gráficos generados
+└── README.md              # Este archivo
+
+Ejecución
+Asegúrate de tener instaladas las dependencias:
+pip install numpy pandas matplotlib
+
+Ejecuta el programa:
+python main.py
+
+o si usas entorno virtual:
+python3 -m main
+
+Salida esperada
+Coordenadas óptimas de sensores (latitud y longitud).
+Valor de aptitud global (eficiencia de riego).
+Gráfico visual del campo con posiciones sugeridas.
+
+Ejemplo de salida:
+
+=== RESULTADOS DE OPTIMIZACIÓN ===
+Mejor valor de aptitud: -1.210999
+Sensor 01 -> lat=25.545007, lon=-108.503001
+Sensor 02 -> lat=25.575998, lon=-108.502003
+...
