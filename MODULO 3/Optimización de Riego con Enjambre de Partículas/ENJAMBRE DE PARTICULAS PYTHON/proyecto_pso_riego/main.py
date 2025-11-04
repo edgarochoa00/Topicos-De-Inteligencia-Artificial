@@ -50,7 +50,7 @@ def guardar_resultados_csv(sensores, mejor_val, cfg):
         for i, (lat, lon) in enumerate(sensores, start=1):
             escritor.writerow([f"Sensor {i}", round(lat, 6), round(lon, 6)])
 
-    print(f"\n✅ Resultados guardados en: {ruta_salida}")
+    print(f"\n Resultados guardados en: {ruta_salida}")
 
 
 def main():
