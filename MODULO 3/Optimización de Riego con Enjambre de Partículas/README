@@ -50,14 +50,17 @@ csv
 scipy (opcional, para análisis adicional)
 
 Estructura del proyecto
-proyecto_pso_riego/
+PROYECTO_PSO_RIEGO/
 │
-├── main.py                # Script principal: ejecuta el flujo completo
-├── cargador_datos.py      # Módulo para cargar y validar datos CSV
-├── pso.py                 # Implementación del algoritmo PSO
-├── datos_cultivos.csv     # Datos de entrada (cultivos y variables)
-├── resultados/            # Resultados y gráficos generados
-└── README.md              # Este archivo
+├── cargador_datos.py        # Carga, limpieza y validación de datos CSV
+├── config.py                # Parámetros de configuración global del PSO
+├── datos_cultivos.csv       # Datos de entrada (variables de cultivos)
+├── funciones_aptitud.py     # Funciones de aptitud y evaluación del modelo
+├── main.py                  # Script principal: ejecuta todo el flujo PSO
+├── pso.py                   # Implementación del algoritmo de Enjambre (PSO)
+├── visualizacion.py         # Generación de gráficos y visualización de resultados
+├── .venv/                   # Entorno virtual de Python
+└── __pycache__/             # Archivos compilados automáticamente
 
 Ejecución
 Asegúrate de tener instaladas las dependencias:
