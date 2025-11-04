@@ -1,0 +1,23 @@
+PROYECTO_PSO_RIEGO/
+│
+├── cargador_datos.py        # Carga, limpieza y validación de datos CSV
+├── config.py                # Parámetros de configuración global del PSO
+├── datos_cultivos.csv       # Datos de entrada (variables de cultivos)
+├── funciones_aptitud.py     # Funciones de aptitud y evaluación del modelo
+├── main.py                  # Script principal: ejecuta todo el flujo PSO
+├── pso.py                   # Implementación del algoritmo de Enjambre (PSO)
+├── visualizacion.py         # Generación de gráficos y visualización de resultados
+├── .venv/                   # Entorno virtual de Python
+└── __pycache__/             # Archivos compilados automáticamente
+
+
+Asegúrate de tener instaladas las dependencias:
+pip install numpy pandas matplotlib
+
+
+Ejecuta el programa:
+python main.py
+
+
+o si usas entorno virtual:
+python3 -m main
