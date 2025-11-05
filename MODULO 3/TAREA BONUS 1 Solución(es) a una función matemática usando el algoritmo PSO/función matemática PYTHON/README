@@ -1,0 +1,15 @@
+Estructura del proyecto
+├── main.py              # Script principal: menú y ejecución de PSO y DE
+├── pso.py               # Implementación del algoritmo PSO (global-best)
+├── de.py                # Implementación del algoritmo de Evolución Diferencial
+├── benchmarks.py        # Funciones matemáticas de prueba (Esfera, Rosenbrock, etc.)
+├── utils.py             # Funciones para generar gráficas y visualizaciones
+└── resultados/          # Carpeta donde se guardan las gráficas generadas
+
+Requisitos
+Para ejecutar el proyecto se requiere Python 3.8 o superior y las siguientes librerías:
+pip install numpy matplotlib
+
+Ejecución
+Para iniciar el programa, desde una terminal en la carpeta del proyecto:
+python main.py
