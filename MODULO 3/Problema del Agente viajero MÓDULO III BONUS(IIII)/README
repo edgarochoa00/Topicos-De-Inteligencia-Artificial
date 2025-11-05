@@ -1,0 +1,93 @@
+# Problema del Agente de Viajes (BONUS II – Módulo III)
+
+Este proyecto implementa un **Algoritmo Genético** para
+resolver el **Problema del Agente de Viajes (TSP, Traveling Salesman Problem)**,
+cuyo objetivo es encontrar la ruta más corta que permita visitar un conjunto 
+de ciudades exactamente una vez y regresar al punto de partida.
+
+El código está completamente **en español**, con **documentación 
+clara**, **estructura modular** y **visualizaciones gráficas** de 
+los resultados.
+
+---
+
+## Descripción general
+
+El **Problema del Agente de Viajes (TSP)** es un desafío
+clásico de optimización combinatoria. En este caso, se 
+trabajó con **siete ciudades europeas** conectadas según el siguiente esquema:
+
+- Londres  
+- Dublín  
+- Madrid  
+- Atenas  
+- París  
+- Varsovia  
+- Moscú  
+
+El algoritmo genético utilizado se basa en los principios de **selección natural y evolución biológica**, aplicando procesos de **selección, cruce, mutación y elitismo** para mejorar las rutas en cada generación.
+
+---
+
+##Estructura del proyecto
+
+├── algoritmo_genetico_tsp.py # Implementación del algoritmo genético
+├── datos.py # Definición del grafo, matriz de distancias y coordenadas
+├── graficos.py # Generación de visualizaciones (convergencia y ruta óptima)
+├── principal.py # Archivo principal de ejecución
+└── resultados/ # Carpeta donde se guardan las gráficas generadas
+
+yaml
+Copiar código
+
+---
+
+## Características principales
+
+- **Lenguaje:** Python 3  
+- **Metaheurística utilizada:** Algoritmo Genético  
+- **Cruce:** OX (Order Crossover)  
+- **Mutación:** Inversión de segmento o intercambio  
+- **Selección:** Torneo  
+- **Estrategia de elitismo:** Conserva los mejores individuos por generación  
+- **Visualizaciones:**  
+  - Ruta óptima encontrada  
+  - Gráfica de convergencia (mejor distancia vs generaciones)
+
+---
+
+## Ejecución del proyecto
+
+### Requisitos previos
+Instala las dependencias necesarias ejecutando:
+```bash
+pip install numpy matplotlib
+Ejecución del programa
+Desde la terminal, dentro del directorio del proyecto, ejecuta:
+
+bash
+Copiar código
+python principal.py
+Esto generará los resultados en la carpeta resultados/:
+ruta_tsp_ag.png → Muestra la ruta óptima entre las ciudades.
+convergencia_tsp_ag.png → Muestra la evolución de la mejor distancia por generación.
+️
+Salida esperada
+Ejemplo de salida en consola:
+=== Problema del Agente de Viajes (TSP) — Algoritmo Genético ===
+
+Mejor ruta (orden de visita):
+París -> Madrid -> Dublín -> Londres -> Varsovia -> Moscú -> Atenas -> París
+Distancia total (km): 6171.0
+
+Resultados obtenidos
+Ruta óptima: París → Madrid → Dublín → Londres → Varsovia → Moscú → Atenas → París
+Distancia total: 6171 km
+Generaciones: 600
+Tamaño de población: 200 individuos
+Tiempo de ejecución: ~5 segundos
+
+Gráficas generadas
+Ruta óptima encontrada (esquema): muestra visualmente el orden de visita.
+Convergencia del algoritmo: indica la estabilidad de la mejor distancia a lo largo de las generaciones.
+
