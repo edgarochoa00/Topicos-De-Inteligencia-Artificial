@@ -1,0 +1,46 @@
+# Algoritmo Genético aplicado al Problema del Viajero (TSP)
+
+**Autores:** Edgar Ochoa Aviles, Herrera Quiñones Abraham Gael
+**Proyecto:** Tarea de Validación III  
+**Lenguaje:** Python   
+Hora:  12:00 P.M A 1:00 P.M 
+
+---
+
+## Descripción general
+
+Este proyecto implementa un **algoritmo genético** que busca la **ruta más corta** 
+entre varios municipios de México, resolviendo el **Problema del Viajero (TSP)**.  
+El programa genera rutas aleatorias y, a través de **evolución simulada**, selecciona, 
+cruza y muta las mejores rutas hasta optimizar el recorrido total.
+
+El criterio de evaluación es la **distancia total recorrida**, 
+donde una menor distancia representa una mayor aptitud de la solución.
+
+---
+
+## Objetivo
+
+Aplicar los **principios de los algoritmos genéticos** para demostrar cómo la 
+selección natural y la recombinación de soluciones pueden resolver problemas complejos de optimización.  
+El propósito es obtener una **solución eficiente y aproximada** sin necesidad de cálculos exhaustivos.
+
+---
+
+## Funcionamiento
+
+1. Se generan rutas iniciales aleatorias (población).  
+2. Se evalúa la distancia total de cada ruta (aptitud).  
+3. Se seleccionan las mejores rutas como padres.  
+4. Se combinan y mutan para crear nuevas generaciones.  
+5. Tras varias iteraciones, el algoritmo converge hacia una ruta más corta.
+
+Durante la ejecución, el programa muestra:
+- La **distancia inicial** (antes de evolucionar).  
+- La **distancia final optimizada**.  
+- El **porcentaje de mejora** y la **ruta final** hallada.
+
+---
+
+## Ejemplo de salida
+
