@@ -201,12 +201,12 @@ Este proyecto demuestra la aplicación práctica de técnicas de Inteligencia Ar
 
 ### Logros Principales
 
-✅ Sistema funcional de detección y reconocimiento de matrículas  
-✅ Integración completa con base de datos SQL Server  
-✅ API REST bien documentada y optimizada  
-✅ Interfaz móvil accesible desde cualquier dispositivo  
-✅ Documentación técnica completa  
-✅ Optimizaciones de rendimiento implementadas  
+ Sistema funcional de detección y reconocimiento de matrículas  
+ Integración completa con base de datos SQL Server  
+ API REST bien documentada y optimizada  
+ Interfaz móvil accesible desde cualquier dispositivo  
+ Documentación técnica completa  
+ Optimizaciones de rendimiento implementadas  
 
 ## Licencia
 
@@ -216,4 +216,3 @@ MIT
 
 **Desarrollado como parte del curso de Tópicos de Inteligencia Artificial**  
 **Instituto Tecnológico de Culiacán**  
-**2024**
