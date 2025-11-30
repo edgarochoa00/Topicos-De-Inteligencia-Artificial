@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detección de Matrículas - Sistema de Reconocimiento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .camera-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .camera-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+                border-radius: 10px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+            
+            button {
+                width: 100%;
+                margin: 5px 0;
+                padding: 15px;
+                font-size: 16px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+
+        .video-container, .preview-container {
+            position: relative;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        video, canvas, img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .btn-secondary {
+            background: #718096;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4a5568;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        /* Mejorar visibilidad en móvil */
+        @media (max-width: 768px) {
+            .result-item {
+                padding: 20px;
+                margin: 15px 0;
+            }
+            
+            .btn-success, .btn-primary {
+                min-height: 48px; /* Tamaño mínimo táctil recomendado */
+                font-size: 16px;
+            }
+            
+            #registerForm {
+                padding: 20px !important;
+            }
+            
+            #registerForm input, #registerForm select {
+                font-size: 16px !important; /* Evitar zoom en iOS */
+                padding: 12px !important;
+            }
+        }
+
+        .plate-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .vehicle-info {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .vehicle-info p {
+            margin: 5px 0;
+            color: #4a5568;
+        }
+
+        .vehicle-info strong {
+            color: #2d3748;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .status.info {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .processing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+        }
+
+        .processing-overlay.hidden {
+            display: none;
+        }
+
+        .processing-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .processing-text {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .history {
+            margin-top: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            border-left: 3px solid #48bb78;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sistema de Detección de Matrículas</h1>
+
+        <div class="camera-section">
+            <div class="video-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas" class="hidden"></canvas>
+            </div>
+            <div class="preview-container">
+                <img id="preview" class="hidden" alt="Preview">
+                <div id="preview-placeholder" style="padding: 50px; text-align: center; color: #718096;">
+                    <p>La imagen capturada aparecerá aquí</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="startBtn" class="btn-primary">Iniciar Cámara</button>
+            <button id="captureBtn" class="btn-success" disabled>Capturar</button>
+            <button id="galleryBtn" class="btn-primary">Seleccionar de Galería</button>
+            <button id="detectBtn" class="btn-primary" disabled>Detectar Matrícula</button>
+            <button id="stopBtn" class="btn-danger" disabled>Detener Cámara</button>
+        </div>
+
+        <div id="status" class="status info hidden"></div>
+        
+        <!-- Overlay de procesamiento para móvil -->
+        <div id="processingOverlay" class="processing-overlay hidden">
+            <div class="processing-spinner"></div>
+            <div class="processing-text">Analizando imagen con IA...</div>
+            <div style="margin-top: 10px; font-size: 14px; opacity: 0.8;">Por favor espera</div>
+        </div>
+
+        <div id="results" class="results hidden">
+            <h2>Resultados de Detección</h2>
+            <div id="resultContent"></div>
+        </div>
+
+        <div id="diagnosis" class="results hidden" style="background: #fff5f5; border-left-color: #f56565;">
+            <h2>Diagnóstico de Detección</h2>
+            <div id="diagnosisContent"></div>
+        </div>
+
+        <div class="history">
+            <h2>Historial de Detecciones</h2>
+            <div id="historyContent">
+                <p style="color: #718096; text-align: center; padding: 20px;">
+                    No hay detecciones aún
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@capacitor/core@latest/dist/capacitor.js"></script>
+    <script>
+        // Cargar plugins de Capacitor si están disponibles
+        let Camera, Network;
+        const isNative = window.Capacitor && window.Capacitor.isNativePlatform();
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isHTTPS = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        // Intentar cargar Capacitor Camera incluso si no es nativo (puede estar disponible en web)
+        if (window.Capacitor && window.Capacitor.Plugins) {
+            Camera = window.Capacitor.Plugins.Camera;
+            Network = window.Capacitor.Plugins.Network;
+        }
+
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const preview = document.getElementById('preview');
+        const previewPlaceholder = document.getElementById('preview-placeholder');
+        const startBtn = document.getElementById('startBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const galleryBtn = document.getElementById('galleryBtn');
+        const detectBtn = document.getElementById('detectBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const status = document.getElementById('status');
+        const results = document.getElementById('results');
+        const resultContent = document.getElementById('resultContent');
+        const historyContent = document.getElementById('historyContent');
+        const diagnosis = document.getElementById('diagnosis');
+        const diagnosisContent = document.getElementById('diagnosisContent');
+        const processingOverlay = document.getElementById('processingOverlay');
+
+        // URL del servidor - detectar automáticamente
+        function getApiUrl() {
+            if (!isNative) {
+                return ''; // En web, usar rutas relativas
+            }
+            
+            // Intentar detectar la IP del servidor automáticamente
+            // Primero intentar con la IP actual del dispositivo
+            const hostname = window.location.hostname;
+            
+            // Si estamos en localhost o 127.0.0.1, intentar detectar IP local
+            if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '') {
+                // En desarrollo, usar la IP configurada o intentar detectar
+                // Por defecto, usar la IP común del servidor local
+                return 'http://192.168.100.40:3000'; // IP del servidor configurada
+            }
+            
+            // Si tenemos una IP/hostname, usarla
+            return `http://${hostname}:3000`;
+        }
+        
+        const API_URL = getApiUrl();
+
+        let stream = null;
+        let capturedImage = null;
+
+        // Función para obtener imagen usando Capacitor Camera con detección automática
+        async function captureWithCapacitor(autoDetect = true) {
+            try {
+                // Si Camera no está disponible, usar input file como fallback en móvil
+                if (!Camera) {
+                    if (isMobile) {
+                        // En móvil sin Capacitor, usar input file
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        // NO usar capture para permitir seleccionar de galería
+                        input.style.display = 'none';
+                        document.body.appendChild(input);
+                        
+                        return new Promise((resolve, reject) => {
+                            input.onchange = async (e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (event) => {
+                                        capturedImage = event.target.result;
+                                        preview.src = capturedImage;
+                                        preview.classList.remove('hidden');
+                                        previewPlaceholder.classList.add('hidden');
+                                        
+                                        showStatus('Imagen capturada. Procesando...', 'info');
+                                        
+                                        if (autoDetect) {
+                                            setTimeout(() => {
+                                                detectPlate();
+                                            }, 300);
+                                        } else {
+                                            detectBtn.disabled = false;
+                                            showStatus('Imagen capturada. Haz clic en "Detectar Matrícula" para procesar.', 'info');
+                                        }
+                                        
+                                        document.body.removeChild(input);
+                                        resolve();
+                                    };
+                                    reader.readAsDataURL(file);
+                                } else {
+                                    document.body.removeChild(input);
+                                    reject(new Error('No se seleccionó ninguna imagen'));
+                                }
+                            };
+                            input.oncancel = () => {
+                                document.body.removeChild(input);
+                                reject(new Error('User cancelled photos app'));
+                            };
+                            input.click();
+                        });
+                    } else {
+                        throw new Error('Camera plugin no disponible. Usa el botón "Capturar" para seleccionar una imagen.');
+                    }
+                }
+                
+                showStatus('Abriendo cámara...', 'info');
+                
+                // Permitir elegir entre cámara y galería
+                const image = await Camera.getPhoto({
+                    quality: 90,
+                    allowEditing: false,
+                    resultType: 'base64',
+                    source: 'PROMPT', // Permite elegir entre cámara y galería
+                    direction: 'BACK'
+                });
+
+                capturedImage = `data:image/jpeg;base64,${image.base64String}`;
+                preview.src = capturedImage;
+                preview.classList.remove('hidden');
+                previewPlaceholder.classList.add('hidden');
+                
+                showStatus('Imagen capturada. Procesando...', 'info');
+                
+                // Detección automática en móvil
+                if (autoDetect && isNative) {
+                    // Pequeño delay para mostrar la imagen antes de procesar
+                    setTimeout(() => {
+                        detectPlate();
+                    }, 500);
+                } else {
+                    detectBtn.disabled = false;
+                    showStatus('Imagen capturada. Haz clic en "Detectar Matrícula" para procesar.', 'info');
+                }
+            } catch (err) {
+                if (err.message !== 'User cancelled photos app') {
+                    showStatus('Error al capturar imagen: ' + err.message, 'error');
+                    console.error('Error capturing image:', err);
+                }
+            }
+        }
+
+        // Iniciar cámara (mejorado para móvil web)
+        startBtn.addEventListener('click', async () => {
+            // Si es móvil (nativo o web), usar Capacitor Camera si está disponible
+            if (isMobile && Camera) {
+                await captureWithCapacitor(true);
+                return;
+            }
+            
+            // Si es nativo, usar Capacitor Camera
+            if (isNative) {
+                await captureWithCapacitor(true);
+                return;
+            }
+            
+            // En web desktop, verificar si getUserMedia está disponible
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                // Si no está disponible, ofrecer usar input file
+                showStatus('La cámara web requiere HTTPS. Usa el botón "Seleccionar de Galería" para seleccionar una imagen.', 'error');
+                
+                // Crear input file temporal (sin capture para permitir galería)
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                // NO usar capture para permitir seleccionar de galería
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            capturedImage = event.target.result;
+                            preview.src = capturedImage;
+                            preview.classList.remove('hidden');
+                            previewPlaceholder.classList.add('hidden');
+                            detectBtn.disabled = false;
+                            showStatus('Imagen seleccionada. Haz clic en "Detectar Matrícula" para procesar.', 'success');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                input.click();
+                return;
+            }
+            
+            // En web con getUserMedia disponible, usar API estándar
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                video.srcObject = stream;
+                startBtn.disabled = true;
+                captureBtn.disabled = false;
+                stopBtn.disabled = false;
+                showStatus('Cámara iniciada. Apunta a una matrícula y captura.', 'success');
+            } catch (err) {
+                showStatus('Error al acceder a la cámara: ' + err.message + '. Usa el botón "Capturar" para seleccionar una imagen.', 'error');
+                console.error('Error accessing camera:', err);
+            }
+        });
+
+        // Botón para seleccionar desde galería
+        galleryBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Botón de galería clickeado');
+            
+            // Si Capacitor Camera está disponible, usarlo (mejor para móvil)
+            if (Camera && (isNative || isMobile)) {
+                try {
+                    showStatus('Abriendo galería...', 'info');
+                    const image = await Camera.getPhoto({
+                        quality: 90,
+                        allowEditing: false,
+                        resultType: 'base64',
+                        source: 'PHOTOLIBRARY', // Específicamente galería
+                        direction: 'BACK'
+                    });
+                    
+                    capturedImage = `data:image/jpeg;base64,${image.base64String}`;
+                    preview.src = capturedImage;
+                    preview.classList.remove('hidden');
+                    previewPlaceholder.classList.add('hidden');
+                    detectBtn.disabled = false;
+                    showStatus('Imagen seleccionada. Haz clic en "Detectar Matrícula" para procesar.', 'success');
+                    return;
+                } catch (err) {
+                    if (err.message !== 'User cancelled photos app') {
+                        console.error('Error con Camera plugin:', err);
+                        showStatus('Error con plugin de cámara. Intentando método alternativo...', 'error');
+                    } else {
+                        return; // Usuario canceló
+                    }
+                }
+            }
+            
+            // Método alternativo: input file (para web o fallback)
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.multiple = false;
+            // NO usar capture para permitir seleccionar de galería
+            input.style.position = 'fixed';
+            input.style.top = '-9999px';
+            input.style.left = '-9999px';
+            input.style.opacity = '0';
+            input.style.width = '1px';
+            input.style.height = '1px';
+            input.style.pointerEvents = 'none';
+            
+            // Agregar al DOM antes de hacer click
+            document.body.appendChild(input);
+            
+            // Configurar eventos ANTES de hacer click
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    console.log('Archivo seleccionado:', file.name, file.type);
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        capturedImage = event.target.result;
+                        preview.src = capturedImage;
+                        preview.classList.remove('hidden');
+                        previewPlaceholder.classList.add('hidden');
+                        detectBtn.disabled = false;
+                        showStatus('Imagen seleccionada. Haz clic en "Detectar Matrícula" para procesar.', 'success');
+                    };
+                    reader.onerror = (error) => {
+                        console.error('Error leyendo archivo:', error);
+                        showStatus('Error al leer la imagen. Intenta con otra imagen.', 'error');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    console.log('No se seleccionó ningún archivo');
+                }
+                // Limpiar después de un delay
+                setTimeout(() => {
+                    if (input.parentNode) {
+                        document.body.removeChild(input);
+                    }
+                }, 100);
+            };
+            
+            // Intentar hacer click inmediatamente
+            try {
+                // En algunos navegadores móviles, necesitamos hacer el input visible momentáneamente
+                input.style.pointerEvents = 'auto';
+                input.click();
+                // Restaurar después
+                setTimeout(() => {
+                    input.style.pointerEvents = 'none';
+                }, 50);
+            } catch (err) {
+                console.error('Error al hacer click en input:', err);
+                showStatus('Error al abrir selector de archivos. Intenta de nuevo.', 'error');
+                if (input.parentNode) {
+                    document.body.removeChild(input);
+                }
+            }
+        });
+
+        // Capturar imagen (solo para web)
+        captureBtn.addEventListener('click', () => {
+            if (isNative) {
+                captureWithCapacitor(true);
+                return;
+            }
+            
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0);
+            
+            capturedImage = canvas.toDataURL('image/jpeg');
+            preview.src = capturedImage;
+            preview.classList.remove('hidden');
+            previewPlaceholder.classList.add('hidden');
+            detectBtn.disabled = false;
+            showStatus('Imagen capturada. Haz clic en "Detectar Matrícula" para procesar.', 'info');
+        });
+
+        // Función para detectar matrícula (reutilizable)
+        async function detectPlate() {
+            if (!capturedImage) {
+                showStatus('Por favor, captura una imagen primero.', 'error');
+                return;
+            }
+
+            detectBtn.disabled = true;
+            showStatus('Analizando imagen con IA...', 'info');
+            
+            // Mostrar overlay de procesamiento en móvil
+            if (isNative && processingOverlay) {
+                processingOverlay.classList.remove('hidden');
+            }
+            
+            if (detectBtn) {
+                detectBtn.innerHTML = 'Detectando... <span class="loading"></span>';
+            }
+
+            try {
+                // Verificar conexión de red en móvil
+                if (isNative && Network) {
+                    const netStatus = await Network.getStatus();
+                    if (!netStatus.connected) {
+                        throw new Error('No hay conexión a internet. Conéctate a una red para procesar la imagen.');
+                    }
+                }
+
+                // Convertir base64 a blob
+                const base64Data = capturedImage.split(',')[1] || capturedImage;
+                const blob = await fetch(`data:image/jpeg;base64,${base64Data}`).then(r => r.blob());
+
+                // Crear FormData
+                const formData = new FormData();
+                formData.append('image', blob, 'capture.jpg');
+                formData.append('diagnosis', 'true'); // Solicitar diagnóstico
+
+                // MEJORA: Detectar si hay múltiples matrículas (imagen grande o múltiples regiones)
+                // Por ahora, intentar detección múltiple primero
+                let response;
+                try {
+                    response = await fetch(`${API_URL}/api/detect/multiple`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const multiResult = await response.json();
+                    
+                    // Si se detectaron múltiples matrículas, mostrarlas
+                    if (multiResult.success && multiResult.plates && multiResult.plates.length > 1) {
+                        displayMultipleResults(multiResult);
+                        addToHistory(multiResult);
+                        showStatus(`Se detectaron ${multiResult.total_found} matrículas`, 'success');
+                        return;
+                    } else if (multiResult.success && multiResult.plates && multiResult.plates.length === 1) {
+                        // Solo una matrícula, usar formato normal
+                        displayResult({
+                            plate_number: multiResult.plates[0].plate_number,
+                            vehicle: multiResult.plates[0].vehicle,
+                            message: multiResult.plates[0].vehicle ? 'Vehículo encontrado' : 'No registrado',
+                            detection_timestamp: multiResult.detection_timestamp
+                        });
+                        addToHistory(multiResult.plates[0]);
+                        showStatus(`Matrícula detectada: ${multiResult.plates[0].plate_number}`, 'success');
+                        return;
+                    }
+                } catch (e) {
+                    console.log('Detección múltiple no disponible, usando método estándar');
+                }
+                
+                // Fallback: usar detección estándar
+                response = await fetch(`${API_URL}/api/detect/diagnosis`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error del servidor: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Manejar respuesta del servidor (compatible con diferentes formatos)
+                const plateNumber = data.plate_number || data.plate || null;
+                const vehicle = data.vehicle || null;
+                const message = data.message || (vehicle ? 'Vehículo encontrado' : 'No registrado');
+
+                if (data.success && plateNumber) {
+                    // MEJORA: La búsqueda en BD ya se hizo automáticamente en el servidor
+                    // Normalizar datos para consistencia
+                    const normalizedData = {
+                        plate_number: plateNumber,
+                        vehicle: vehicle,
+                        message: message,
+                        detection_timestamp: data.detection_timestamp || new Date().toISOString()
+                    };
+                    
+                    // Mostrar resultado con información del vehículo (si existe)
+                    displayResult(normalizedData);
+                    addToHistory(normalizedData);
+                    
+                    if (vehicle) {
+                        const ownerName = vehicle.owner_name || vehicle.Owner || 'Desconocido';
+                        showStatus(`Matrícula detectada: ${plateNumber} - Vehículo encontrado: ${ownerName}`, 'success');
+                    } else {
+                        showStatus(`Matrícula detectada: ${plateNumber} - No registrado (puedes registrarlo abajo)`, 'info');
+                        // Scroll automático al botón de registro después de 1 segundo (solo en móvil)
+                        if (isMobile) {
+                            setTimeout(() => {
+                                const registerBtn = document.getElementById('registerVehicleBtn');
+                                if (registerBtn) {
+                                    registerBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                } else {
+                                    // Si no hay botón, hacer scroll a los resultados
+                                    results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }
+                            }, 1000);
+                        }
+                    }
+                } else {
+                    // Mostrar diagnóstico detallado si está disponible
+                    if (data.diagnosis) {
+                        displayDiagnosis(data);
+                    }
+                    showStatus('No se pudo detectar una matrícula. ' + (message || 'Revisa el diagnóstico abajo.'), 'error');
+                }
+            } catch (error) {
+                showStatus('Error al procesar la imagen: ' + error.message, 'error');
+                console.error('Error:', error);
+            } finally {
+                // Ocultar overlay de procesamiento
+                if (processingOverlay) {
+                    processingOverlay.classList.add('hidden');
+                }
+                
+                if (detectBtn) {
+                    detectBtn.disabled = false;
+                    detectBtn.innerHTML = 'Detectar Matrícula';
+                }
+            }
+        }
+
+        // Detectar matrícula (botón manual)
+        detectBtn.addEventListener('click', detectPlate);
+
+        // Detener cámara
+        stopBtn.addEventListener('click', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                video.srcObject = null;
+            }
+            startBtn.disabled = false;
+            captureBtn.disabled = true;
+            detectBtn.disabled = true;
+            stopBtn.disabled = true;
+            preview.classList.add('hidden');
+            previewPlaceholder.classList.remove('hidden');
+            capturedImage = null;
+            showStatus('Cámara detenida', 'info');
+        });
+
+        // Optimizar UI para móvil (nativo o web)
+        if (isMobile) {
+            startBtn.textContent = 'Capturar y Detectar Matrícula';
+            startBtn.style.width = '100%';
+            startBtn.style.padding = '15px';
+            startBtn.style.fontSize = '18px';
+            
+            // En móvil, ocultar controles de cámara web
+            captureBtn.style.display = 'none';
+            stopBtn.style.display = 'none';
+            video.style.display = 'none';
+            
+            // Mostrar botón de galería en móvil
+            galleryBtn.style.display = 'block';
+            galleryBtn.style.width = '100%';
+            galleryBtn.style.marginTop = '10px';
+            
+            // Mostrar botón de detección para re-detectar si es necesario
+            detectBtn.style.display = 'block';
+            detectBtn.textContent = 'Re-detectar Matrícula';
+            
+            // Si no es HTTPS y no es nativo, mostrar mensaje informativo
+            if (!isHTTPS && !isNative) {
+                showStatus('Tip: Para mejor experiencia, instala la app nativa o usa HTTPS. Por ahora, puedes seleccionar imágenes desde tu galería.', 'info');
+            }
+        }
+
+        // Mostrar múltiples resultados
+        function displayMultipleResults(data) {
+            results.classList.remove('hidden');
+            diagnosis.classList.add('hidden');
+            
+            let html = `
+                <div class="result-item" style="margin-bottom: 20px;">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">
+                        Se detectaron ${data.total_found} matrículas:
+                    </h3>
+            `;
+            
+            data.plates.forEach((plate, index) => {
+                html += `
+                    <div style="border: 2px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #f7fafc;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div class="plate-number" style="font-size: 24px; color: #667eea;">
+                                ${plate.plate_number}
+                            </div>
+                            <span style="background: ${plate.vehicle ? '#48bb78' : '#f56565'}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px;">
+                                ${plate.vehicle ? 'Registrado' : 'No registrado'}
+                            </span>
+                        </div>
+                `;
+                
+                if (plate.vehicle) {
+                    html += `
+                        <div class="vehicle-info" style="margin-top: 10px;">
+                            <p><strong>Propietario:</strong> ${plate.vehicle.owner_name}</p>
+                            <p><strong>Vehículo:</strong> ${plate.vehicle.vehicle_make || 'N/A'} ${plate.vehicle.vehicle_model || ''}</p>
+                            <p><strong>Año:</strong> ${plate.vehicle.vehicle_year || 'N/A'}</p>
+                            <p><strong>Color:</strong> ${plate.vehicle.vehicle_color || 'N/A'}</p>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="vehicle-info" style="margin-top: 10px;">
+                            <p style="color: #f56565; font-weight: bold; margin-bottom: 15px;">Este vehículo no está registrado en la base de datos</p>
+                            <button onclick="showRegisterForm('${plate.plate_number}')" class="btn-success" style="margin-top: 10px; width: 100%; padding: 15px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer;">
+                                Registrar Vehículo
+                            </button>
+                        </div>
+                    `;
+                }
+                
+                html += `
+                        <p style="margin-top: 10px; font-size: 12px; color: #718096;">
+                            <strong>Confianza:</strong> ${(plate.confidence * 100).toFixed(1)}%
+                        </p>
+                    </div>
+                `;
+            });
+            
+            html += `
+                </div>
+            `;
+            
+            resultContent.innerHTML = html;
+        }
+        
+        // Mostrar resultado
+        function displayResult(data) {
+            results.classList.remove('hidden');
+            diagnosis.classList.add('hidden');
+            
+            let html = `
+                <div class="result-item">
+                    <div class="plate-number">${data.plate_number}</div>
+                    <p><strong>Estado:</strong> ${data.message || (data.vehicle ? 'Vehículo registrado' : 'No registrado')}</p>
+            `;
+
+            if (data.vehicle) {
+                // Compatible con diferentes formatos de respuesta
+                const ownerName = data.vehicle.owner_name || data.vehicle.Owner || 'N/A';
+                const vehicleMake = data.vehicle.vehicle_make || data.vehicle.Brand || 'N/A';
+                const vehicleModel = data.vehicle.vehicle_model || data.vehicle.Model || '';
+                
+                html += `
+                    <div class="vehicle-info">
+                        <p><strong>Propietario:</strong> ${ownerName}</p>
+                        <p><strong>ID Propietario:</strong> ${data.vehicle.owner_id || 'N/A'}</p>
+                        <p><strong>Vehículo:</strong> ${vehicleMake} ${vehicleModel}</p>
+                        <p><strong>Año:</strong> ${data.vehicle.vehicle_year || 'N/A'}</p>
+                        <p><strong>Color:</strong> ${data.vehicle.vehicle_color || 'N/A'}</p>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="vehicle-info">
+                        <p style="color: #f56565; font-weight: bold; margin-bottom: 15px;">Este vehículo no está registrado en la base de datos</p>
+                        <button id="registerVehicleBtn" class="btn-success" style="margin-top: 15px; width: 100%; padding: 15px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer;">
+                            Registrar Vehículo
+                        </button>
+                    </div>
+                `;
+            }
+
+            html += `
+                    <p><strong>Fecha:</strong> ${new Date(data.detection_timestamp || new Date()).toLocaleString()}</p>
+                </div>
+            `;
+
+            resultContent.innerHTML = html;
+            
+            // Agregar listener para botón de registro si existe
+            const registerBtn = document.getElementById('registerVehicleBtn');
+            if (registerBtn) {
+                registerBtn.addEventListener('click', () => {
+                    showRegisterForm(data.plate_number);
+                });
+            }
+        }
+        
+        // Función para mostrar formulario de registro (mejorada para móvil)
+        function showRegisterForm(plateNumber) {
+            // Si ya existe un formulario, removerlo primero
+            const existingForm = document.getElementById('registerForm');
+            if (existingForm) {
+                existingForm.remove();
+            }
+            
+            const formHtml = `
+                <div id="registerForm" style="margin-top: 20px; padding: 20px; background: white; border-radius: 10px; border: 2px solid #667eea; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 15px; color: #667eea; font-size: 18px;">Registrar Nuevo Vehículo</h3>
+                    <form id="vehicleForm">
+                        <div style="margin-bottom: 15px;">
+                            <label><strong>Matrícula:</strong></label>
+                            <input type="text" id="plate_number" value="${plateNumber}" 
+                                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;"
+                                   placeholder="Ej: VPM-45-32" maxlength="15">
+                            <small style="color: #718096; font-size: 12px;">Puedes editar la matrícula si fue detectada incorrectamente</small>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label><strong>Nombre del Propietario *:</strong></label>
+                            <input type="text" id="owner_name" required 
+                                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label><strong>ID Propietario:</strong></label>
+                            <input type="text" id="owner_id" 
+                                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div>
+                                <label><strong>Marca:</strong></label>
+                                <input type="text" id="vehicle_make" 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                            </div>
+                            <div>
+                                <label><strong>Modelo:</strong></label>
+                                <input type="text" id="vehicle_model" 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div>
+                                <label><strong>Año:</strong></label>
+                                <input type="number" id="vehicle_year" min="1900" max="2030" 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                            </div>
+                            <div>
+                                <label><strong>Color:</strong></label>
+                                <input type="text" id="vehicle_color" 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button type="submit" class="btn-success" style="flex: 1; padding: 15px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer;">
+                                Guardar Vehículo
+                            </button>
+                            <button type="button" id="cancelRegisterBtn" class="btn-secondary" style="flex: 1; padding: 15px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; background: #e2e8f0; color: #4a5568;">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            const resultItem = resultContent.querySelector('.result-item');
+            if (resultItem) {
+                resultItem.insertAdjacentHTML('beforeend', formHtml);
+                
+                // Scroll al formulario en móvil
+                if (isMobile) {
+                    setTimeout(() => {
+                        const form = document.getElementById('registerForm');
+                        if (form) {
+                            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 100);
+                }
+                
+                // Manejar envío del formulario
+                const vehicleForm = document.getElementById('vehicleForm');
+                if (vehicleForm) {
+                    vehicleForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        await registerVehicle(plateNumber);
+                    });
+                }
+                
+                // Manejar cancelar
+                const cancelBtn = document.getElementById('cancelRegisterBtn');
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', () => {
+                        const form = document.getElementById('registerForm');
+                        if (form) {
+                            form.remove();
+                        }
+                    });
+                }
+            } else {
+                // Si no hay result-item, crear uno nuevo
+                resultContent.innerHTML = `
+                    <div class="result-item">
+                        <div class="plate-number">${plateNumber}</div>
+                        <p><strong>Estado:</strong> No registrado</p>
+                        ${formHtml}
+                    </div>
+                `;
+                
+                // Scroll al formulario en móvil
+                if (isMobile) {
+                    setTimeout(() => {
+                        const form = document.getElementById('registerForm');
+                        if (form) {
+                            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 100);
+                }
+                
+                // Manejar envío del formulario
+                const vehicleForm = document.getElementById('vehicleForm');
+                if (vehicleForm) {
+                    vehicleForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        await registerVehicle(plateNumber);
+                    });
+                }
+                
+                // Manejar cancelar
+                const cancelBtn = document.getElementById('cancelRegisterBtn');
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', () => {
+                        const form = document.getElementById('registerForm');
+                        if (form) {
+                            form.remove();
+                        }
+                    });
+                }
+            }
+        }
+        
+        // Función para registrar vehículo (mejorada para móvil)
+        async function registerVehicle(plateNumber) {
+            const form = document.getElementById('vehicleForm');
+            if (!form) {
+                showStatus('Error: No se encontró el formulario', 'error');
+                return;
+            }
+            
+            // Obtener valores del formulario con validación
+            const plateInput = document.getElementById('plate_number');
+            const ownerNameInput = document.getElementById('owner_name');
+            const ownerIdInput = document.getElementById('owner_id');
+            const vehicleMakeInput = document.getElementById('vehicle_make');
+            const vehicleModelInput = document.getElementById('vehicle_model');
+            const vehicleYearInput = document.getElementById('vehicle_year');
+            const vehicleColorInput = document.getElementById('vehicle_color');
+            
+            if (!plateInput || !ownerNameInput) {
+                showStatus('Error: Campos del formulario no encontrados', 'error');
+                return;
+            }
+            
+            const formData = {
+                plate_number: plateInput.value.trim(),
+                owner_name: ownerNameInput.value.trim(),
+                owner_id: ownerIdInput ? ownerIdInput.value.trim() || null : null,
+                vehicle_make: vehicleMakeInput ? vehicleMakeInput.value.trim() || null : null,
+                vehicle_model: vehicleModelInput ? vehicleModelInput.value.trim() || null : null,
+                vehicle_year: vehicleYearInput ? (vehicleYearInput.value ? parseInt(vehicleYearInput.value) : null) : null,
+                vehicle_color: vehicleColorInput ? vehicleColorInput.value.trim() || null : null
+            };
+            
+            // Validación
+            if (!formData.owner_name) {
+                showStatus('El nombre del propietario es requerido', 'error');
+                if (ownerNameInput) {
+                    ownerNameInput.focus();
+                }
+                return;
+            }
+            
+            if (!formData.plate_number) {
+                showStatus('La matrícula es requerida', 'error');
+                if (plateInput) {
+                    plateInput.focus();
+                }
+                return;
+            }
+            
+            try {
+                showStatus('Guardando vehículo...', 'info');
+                
+                // Deshabilitar botón de envío mientras se procesa
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Guardando...';
+                }
+                
+                // Log para debugging
+                console.log('Enviando datos de registro:', formData);
+                console.log('URL:', `${API_URL}/api/vehicle`);
+                
+                const response = await fetch(`${API_URL}/api/vehicle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                console.log('Respuesta del servidor:', response.status, response.statusText);
+                
+                const data = await response.json();
+                console.log('Datos recibidos:', data);
+                
+                if (data.success) {
+                    showStatus('Vehículo registrado exitosamente', 'success');
+                    
+                    // Ocultar formulario
+                    const registerForm = document.getElementById('registerForm');
+                    if (registerForm) {
+                        registerForm.remove();
+                    }
+                    
+                    // Recargar información del vehículo
+                    try {
+                        const vehicleResponse = await fetch(`${API_URL}/api/vehicle/${formData.plate_number}`);
+                        const vehicleData = await vehicleResponse.json();
+                        if (vehicleData.success) {
+                            displayResult({
+                                plate_number: formData.plate_number,
+                                vehicle: vehicleData.vehicle,
+                                message: 'Vehículo encontrado',
+                                detection_timestamp: new Date().toISOString()
+                            });
+                            
+                            // Scroll al resultado en móvil
+                            if (isMobile) {
+                                setTimeout(() => {
+                                    results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }, 300);
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Error al recargar vehículo:', err);
+                    }
+                } else {
+                    const errorMsg = data.error || data.message || 'No se pudo registrar el vehículo';
+                    console.error('Error del servidor:', errorMsg);
+                    showStatus('Error: ' + errorMsg, 'error');
+                    // Rehabilitar botón
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Guardar Vehículo';
+                    }
+                }
+            } catch (error) {
+                console.error('Error al registrar vehículo:', error);
+                console.error('   Mensaje:', error.message);
+                console.error('   Stack:', error.stack);
+                showStatus('Error al registrar: ' + error.message, 'error');
+                // Rehabilitar botón
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Guardar Vehículo';
+                }
+            }
+        }
+
+        // Mostrar diagnóstico
+        function displayDiagnosis(data) {
+            diagnosis.classList.remove('hidden');
+            results.classList.add('hidden');
+            
+            if (!data.diagnosis) {
+                diagnosisContent.innerHTML = '<p>No se pudo obtener diagnóstico detallado.</p>';
+                return;
+            }
+
+            let html = '';
+
+            // Información de la imagen
+            if (data.diagnosis.image_info) {
+                html += '<div class="result-item"><h3>Información de la Imagen</h3>';
+                html += `<p><strong>Resolución:</strong> ${data.diagnosis.image_info.width}x${data.diagnosis.image_info.height}</p>`;
+                html += `<p><strong>Canales:</strong> ${data.diagnosis.image_info.channels}</p>`;
+                html += `<p><strong>Proporción:</strong> ${data.diagnosis.image_info.aspect_ratio?.toFixed(2) || 'N/A'}</p>`;
+                html += '</div>';
+            }
+
+            // Advertencias
+            if (data.diagnosis.warnings && data.diagnosis.warnings.length > 0) {
+                html += '<div class="result-item"><h3>Advertencias</h3><ul>';
+                data.diagnosis.warnings.forEach(warning => {
+                    html += `<li>${warning}</li>`;
+                });
+                html += '</ul></div>';
+            }
+
+            // Estrategias probadas
+            if (data.diagnosis.strategies_tried && data.diagnosis.strategies_tried.length > 0) {
+                html += '<div class="result-item"><h3>Estrategias Probadas</h3><ul>';
+                data.diagnosis.strategies_tried.forEach((strategy, i) => {
+                    html += `<li><strong>${strategy.name}</strong>`;
+                    if (strategy.status === 'failed' && strategy.reason) {
+                        html += `<br><span style="color: #718096; font-size: 0.9em;">→ ${strategy.reason}</span>`;
+                    }
+                    html += '</li>';
+                });
+                html += '</ul></div>';
+            }
+
+            // Recomendaciones
+            if (data.diagnosis.recommendations && data.diagnosis.recommendations.length > 0) {
+                html += '<div class="result-item" style="background: #f0fff4; border-left: 4px solid #48bb78;"><h3>Recomendaciones</h3><ul>';
+                data.diagnosis.recommendations.forEach(rec => {
+                    html += `<li>${rec}</li>`;
+                });
+                html += '</ul></div>';
+            }
+
+            diagnosisContent.innerHTML = html || '<p>No hay información de diagnóstico disponible.</p>';
+        }
+
+        // Agregar al historial
+        function addToHistory(data) {
+            if (historyContent.querySelector('p')) {
+                historyContent.innerHTML = '';
+            }
+
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            const plateNumber = data.plate_number || data.plate || 'N/A';
+            const ownerName = data.vehicle ? (data.vehicle.owner_name || data.vehicle.Owner || 'Desconocido') : 'No registrado';
+            historyItem.innerHTML = `
+                <strong>${plateNumber}</strong> - 
+                ${ownerName} - 
+                ${new Date(data.detection_timestamp || new Date()).toLocaleString()}
+            `;
+            historyContent.insertBefore(historyItem, historyContent.firstChild);
+        }
+
+        // Mostrar estado
+        function showStatus(message, type) {
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.classList.remove('hidden');
+            setTimeout(() => {
+                if (type !== 'info') {
+                    status.classList.add('hidden');
+                }
+            }, 5000);
+        }
+
+        // Cargar historial al iniciar (opcional)
+        // loadHistory();
+
+        // Mostrar información de conexión en móvil
+        if (isNative && Network) {
+            Network.addListener('networkStatusChange', status => {
+                if (!status.connected) {
+                    showStatus('Sin conexión a internet. La detección requiere conexión al servidor.', 'error');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
