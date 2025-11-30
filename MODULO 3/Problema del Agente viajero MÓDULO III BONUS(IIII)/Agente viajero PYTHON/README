@@ -1,0 +1,12 @@
+├── algoritmo_genetico_tsp.py # Implementación del algoritmo genético
+├── datos.py # Definición del grafo, matriz de distancias y coordenadas
+├── graficos.py # Generación de visualizaciones (convergencia y ruta óptima)
+├── principal.py # Archivo principal de ejecución
+└── resultados/ # Carpeta donde se guardan las gráficas generadas
+
+Requisitos previos
+Instala las dependencias necesarias ejecutando:
+```bash
+pip install numpy matplotlib
+
+python principal.py

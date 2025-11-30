@@ -1,0 +1,55 @@
+Optimización con PSO y Evolución Diferencial
+
+Descripción general
+Este proyecto implementa y compara dos algoritmos de optimización poblacional:
+Optimización por Enjambre de Partículas (PSO)
+
+Evolución Diferencial (DE)
+Ambos algoritmos se aplican a funciones matemáticas de prueba 
+(benchmark functions) para analizar su comportamiento, velocidad 
+de convergencia y capacidad para encontrar soluciones óptimas.
+El trabajo forma parte del Módulo III – Tareas adicionales del 
+curso de Técnicas de Optimización.
+
+El código permite ejecutar los algoritmos, generar resultados 
+numéricos y visualizar gráficamente la convergencia y las 
+posiciones finales de las partículas o individuos.
+
+Estructura del proyecto
+├── main.py              # Script principal: menú y ejecución de PSO y DE
+├── pso.py               # Implementación del algoritmo PSO (global-best)
+├── de.py                # Implementación del algoritmo de Evolución Diferencial
+├── benchmarks.py        # Funciones matemáticas de prueba (Esfera, Rosenbrock, etc.)
+├── utils.py             # Funciones para generar gráficas y visualizaciones
+└── resultados/          # Carpeta donde se guardan las gráficas generadas
+
+Requisitos
+
+Para ejecutar el proyecto se requiere Python 3.8 o superior y las siguientes librerías:
+pip install numpy matplotlib
+
+Ejecución
+Para iniciar el programa, desde una terminal en la carpeta del proyecto:
+python main.py
+
+
+El sistema mostrará un menú interactivo con distintas funciones matemáticas de optimización:
+Seleccione la función a optimizar:
+1) Esfera
+2) Rosenbrock
+3) Rastrigin
+4) Ackley
+5) Griewank
+
+
+Tras seleccionar una opción, el script ejecutará los algoritmos PSO y 
+DE, mostrando información sobre las iteraciones y generando las 
+siguientes gráficas en la carpeta resultados/:
+
+Función_PSO_convergencia.png
+
+Función_PSO_posiciones.png
+
+Función_DE_convergencia.png
+
+Función_DE_posiciones.png

@@ -1,0 +1,27 @@
+🧩 Estructura del proyecto
+
+├── data/
+│   ├── distribucion.xlsx          # Datos de entrada (coordenadas, demandas, tipos)
+│   ├── matrices/                  # Matrices de distancia y combustible
+├── mdvrp/
+│   ├── config.py                  # Parámetros de configuración
+│   ├── data_loader.py             # Carga de datos
+│   ├── geometry.py                # Cálculo de distancias
+│   ├── clustering.py              # Asignación de tiendas a CDs
+│   ├── optimizer.py               # Núcleo del algoritmo SA
+│   ├── local_search.py            # Operadores 2-opt, swap, relocate
+│   ├── route_builder.py           # Construcción de rutas iniciales
+│   ├── solver.py                  # Controlador principal del modelo
+│   ├── visualizer.py              # Generación de mapas con Folium
+├── main.py                        # Script principal de ejecución
+├── requirements.txt               # Dependencias del proyecto
+└── README.md                      # Este documento
+
+Crear entorno virtual
+python -m venv venv
+source venv/bin/activate  # En Mac/Linux
+venv\\Scripts\\activate   # En Windows
+
+🚀 Ejecución
+Ejecuta el script principal para optimizar las rutas:
+python main.py

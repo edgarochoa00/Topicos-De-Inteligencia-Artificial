@@ -1,0 +1,40 @@
+INTRODUCCION:
+
+Este proyecto implementa un modelo computacional para optimizar rutas de distribución de
+productos de abarrotes desde varios Centros de Distribución (CD) hacia múltiples 
+sucursales de una cadena de restaurantes en Culiacán, Sinaloa.
+El problema se modela como un Multiple Depot Vehicle Routing Problem (MDVRP) y se resuelve 
+mediante una metaheurística de Recocido Simulado (Simulated Annealing, SA), con el objetivo 
+de minimizar el consumo de combustible y la distancia total recorrida.
+El modelo combina técnicas de optimización combinatoria, heurísticas de búsqueda local 
+(2-opt, swap, relocate) y un enfoque probabilístico de exploración controlada.
+
+
+🧩 Estructura del proyecto
+
+├── data/
+│   ├── distribucion.xlsx          # Datos de entrada (coordenadas, demandas, tipos)
+│   ├── matrices/                  # Matrices de distancia y combustible
+├── mdvrp/
+│   ├── config.py                  # Parámetros de configuración
+│   ├── data_loader.py             # Carga de datos
+│   ├── geometry.py                # Cálculo de distancias
+│   ├── clustering.py              # Asignación de tiendas a CDs
+│   ├── optimizer.py               # Núcleo del algoritmo SA
+│   ├── local_search.py            # Operadores 2-opt, swap, relocate
+│   ├── route_builder.py           # Construcción de rutas iniciales
+│   ├── solver.py                  # Controlador principal del modelo
+│   ├── visualizer.py              # Generación de mapas con Folium
+├── main.py                        # Script principal de ejecución
+├── requirements.txt               # Dependencias del proyecto
+└── README.md                      # Este documento
+
+Crear entorno virtual
+python -m venv venv
+source venv/bin/activate  # En Mac/Linux
+venv\\Scripts\\activate   # En Windows
+
+
+🚀 Ejecución
+Ejecuta el script principal para optimizar las rutas:
+python main.py
