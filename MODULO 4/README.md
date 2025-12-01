@@ -11,6 +11,13 @@
 - Edgar Ochoa Aviles
 
 ---
+youtube LINK:
+
+Evidencia1 DeteccionDePlacas
+https://youtu.be/kQpPH44FHCc
+
+Evidencia2 BaseDeDatos
+https://www.youtube.com/watch?v=nRE2JGdtNDg
 
 ## Descripción del Módulo
 
